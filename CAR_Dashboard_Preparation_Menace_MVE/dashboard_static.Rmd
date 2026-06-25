@@ -2,10 +2,7 @@
 pagetitle: "Dashboard MVE RCA"
 output:
   html_document:
-    toc: true
-    toc_float:
-      collapsed: false
-      smooth_scroll: true
+    toc: false
     theme: flatly
     self_contained: true
     css: www/custom.css
