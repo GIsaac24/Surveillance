@@ -1,0 +1,317 @@
+---
+title: "CAR Dashboard — Préparation Menace MVE"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    theme: flatly
+    self_contained: true
+    css: www/custom.css
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, fig.width = 10, fig.height = 5.2, dpi = 120)
+source("global.R", encoding = "UTF-8")
+d <- load_dashboard_data(DATA_DIR)
+shp_priority <- load_priority_district_shapes(SHAPEFILE_DIR)
+logo <- file.path(DATA_DIR, "images", "Armoiries RCA.png")
+poe_pack <- poe_analysis_pack(d$poe, "fluvial")
+```
+
+```{r header, results='asis'}
+htmltools::div(
+  class = "main-header",
+  if (file.exists(logo)) htmltools::img(src = knitr::image_uri(logo), class = "header-logo"),
+  htmltools::div(
+    htmltools::div(class = "eyebrow", "République Centrafricaine"),
+    htmltools::h1(DASHBOARD_TITLE),
+    htmltools::p(paste(DASHBOARD_SUBTITLE, "— export HTML généré le", format(Sys.time(), "%d/%m/%Y à %H:%M")))
+  )
+)
+```
+
+## Vue d’ensemble
+
+```{r overview-kpi, results='asis'}
+ind <- d$indicators
+htmltools::div(
+  class = "kpi-grid",
+  kpi_card("Voyageurs dépistés", fmt_num(ind$poe$voyageurs), paste(ind$poe$n_poe, "PoE suivis")),
+  kpi_card("Alertes PoE", fmt_num(ind$poe$alertes), paste("Validées :", fmt_num(ind$poe$alertes_validees))),
+  kpi_card("Districts prioritaires", fmt_num(ind$strategic$districts_prioritaires), "Préparation ciblée"),
+  kpi_card("Activités préparatoires", fmt_num(ind$activities$total_activites), paste("Avancement moyen :", fmt_pct(ind$activities$taux_avancement_global))),
+  kpi_card("Formations", fmt_num(ind$formations$total_formations), paste("Réalisées :", fmt_num(ind$formations$formations_realisees))),
+  kpi_card("Laboratoires prévus", fmt_num(ind$lab$laboratoires_prevus), paste("Gap matériel :", fmt_num(ind$lab$gap_materiel))),
+  kpi_card("Cas confirmés RDC/Ouganda", fmt_num(ind$epidemio$cas_confirmes_total), paste("CFR :", fmt_pct(ind$epidemio$cfr))),
+  kpi_card("Score indicatif préparation", fmt_pct(ind$strategic$score_preparation), "Activités, formations et laboratoires")
+)
+```
+
+```{r overview-plots}
+pillar_progress_summary(d$pillar_activities) |>
+  ggplot(aes(forcats::fct_reorder(pilier, taux_avancement), taux_avancement)) +
+  geom_col(fill = "#B91C1C", width = .72) +
+  coord_flip() +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1), limits = c(0, 1)) +
+  labs(title = "Avancement moyen par pilier", x = NULL, y = NULL) +
+  theme_minimal(base_size = 12) +
+  theme(plot.title = element_text(face = "bold", color = "#7F1D1D"))
+```
+
+```{r poe-trend}
+daily_poe_summary(d$poe) |>
+  ggplot(aes(date_collecte, voyageurs, color = type_poe)) +
+  geom_line(linewidth = 1.1) +
+  geom_point(size = 2.2) +
+  scale_color_manual(values = c(aeroport = "#B91C1C", fluvial = "#F97316")) +
+  scale_y_continuous(labels = scales::label_number(big.mark = " ")) +
+  labs(title = "Tendance des voyageurs dépistés", x = NULL, y = "Voyageurs", color = "Type PoE") +
+  theme_minimal(base_size = 12) +
+  theme(plot.title = element_text(face = "bold", color = "#7F1D1D"), legend.position = "bottom")
+```
+
+## Contexte de la menace MVE
+
+```{r contexte, results='asis'}
+htmltools::div(class = "context-box", d$contexte$text)
+```
+
+## Chronologie des activités préparatoires
+
+```{r chronologie-table}
+make_reactable(d$chronologie, page_size = 10)
+```
+
+## Surveillance aux points d’entrée fluviaux
+
+```{r poe-kpis, results='asis'}
+k <- poe_pack$kpi
+htmltools::div(
+  class = "kpi-grid",
+  kpi_card("Voyageurs contrôlés", fmt_num(k$voyageurs), paste(fmt_num(k$rapports), "rapports reçus"), "#2B6CB0"),
+  kpi_card("Signaux T° ≥ 38 °C", fmt_num(k$temp_sup38), paste("Taux :", fmt_pct(k$taux_fievre)), "#F97316"),
+  kpi_card("Alertes vérifiées", fmt_num(k$alertes_verifiees), paste("Vérification :", fmt_pct(k$taux_verification)), "#16A34A"),
+  kpi_card("Alertes validées", fmt_num(k$alertes_validees), paste("Validation :", fmt_pct(k$taux_validation)), "#B91C1C"),
+  kpi_card("PoE fluviaux observés", fmt_num(k$n_poe), paste(fmt_num(k$n_districts), "districts"), "#7C3AED")
+)
+```
+
+### Analyses fluviales {.tabset .tabset-fade}
+
+#### Synthèse exécutive
+
+```{r poe-executive, results='asis'}
+poe_executive_ui(poe_pack, include_operational_notes = FALSE)
+```
+
+#### Activité et tendances
+
+```{r poe-daily-volume}
+plot_poe_daily_volume(poe_pack)
+```
+
+```{r poe-fever-trend}
+plot_poe_fever_trend(poe_pack)
+```
+
+```{r poe-site-volume}
+plot_poe_volume_site(poe_pack)
+```
+
+#### Alertes et priorités
+
+```{r poe-alert-cascade}
+plot_poe_alert_cascade(poe_pack)
+```
+
+```{r poe-alert-sites}
+alert_sites <- poe_pack$alert_sites |>
+  dplyr::select(district_sanitaire, point_entree, voyageurs, temp_sup38, alertes_detectees, alertes_verifiees, alertes_validees, taux_fievre)
+if (!nrow(alert_sites)) {
+  alert_sites <- dplyr::tibble(message = "Aucun PoE fluvial avec alerte ou signal fébrile.")
+}
+make_reactable(alert_sites, page_size = 10)
+```
+
+#### Tableau détaillé des PoE
+
+```{r poe-detail-table}
+make_reactable(
+  poe_pack$site |>
+    dplyr::select(district_sanitaire, point_entree, rapports, jours_notifies, voyageurs, temp_inf38, temp_sup38, alertes_detectees, alertes_verifiees, alertes_validees, taux_fievre, part_volume),
+  page_size = 12,
+  columns = list(
+    taux_fievre = reactable::colDef(format = reactable::colFormat(percent = TRUE, digits = 1)),
+    part_volume = reactable::colDef(format = reactable::colFormat(percent = TRUE, digits = 1))
+  )
+)
+```
+
+#### Conclusions et actions prioritaires
+
+```{r poe-actions, results='asis'}
+poe_priority_actions_ui(poe_pack, include_quality_action = FALSE)
+```
+
+## Surveillance à l’Aéroport international Bangui M’Poko
+
+```{r aero-kpis, results='asis'}
+poe_aero <- d$poe_aeroport
+ae <- poe_indicators(poe_aero)
+htmltools::div(
+  class = "kpi-grid",
+  kpi_card("Voyageurs aéroport", fmt_num(ae$voyageurs)),
+  kpi_card("Température ≥ 38°C", fmt_num(ae$temp_sup38), fmt_pct(ae$taux_temp_sup38)),
+  kpi_card("Alertes détectées", fmt_num(ae$alertes)),
+  kpi_card("Alertes validées", fmt_num(ae$alertes_validees))
+)
+```
+
+```{r aero-plot}
+daily_aero <- daily_poe_summary(poe_aero)
+if (!nrow(daily_aero)) {
+  empty_plot("Aucune donnée aéroport disponible dans le fichier actuel.")
+} else {
+  daily_aero |>
+    ggplot(aes(date_collecte, voyageurs)) +
+    geom_line(color = "#B91C1C", linewidth = 1.2) +
+    geom_point(color = "#B91C1C", fill = "#FDE68A", shape = 21, size = 3) +
+    labs(title = "Tendance journalière des voyageurs à l’aéroport", x = NULL, y = "Voyageurs") +
+    theme_minimal(base_size = 12) +
+    theme(plot.title = element_text(face = "bold", color = "#7F1D1D"))
+}
+```
+
+## Matrice des formations et chronogramme
+
+```{r formations-plot}
+d$formations |>
+  mutate(
+    start = dplyr::coalesce(date_debut_reelle, date_debut_prevue),
+    end = dplyr::coalesce(date_fin_reelle, date_fin_prevue, start),
+    label = stringr::str_trunc(intitule_formation, 42)
+  ) |>
+  ggplot(aes(y = forcats::fct_reorder(label, start), x = start, xend = end, yend = label, color = statut)) +
+  geom_segment(linewidth = 6, lineend = "round") +
+  geom_point(size = 2) +
+  scale_color_manual(values = c("non démarrée" = "#9CA3AF", "planifiée" = "#F97316", "en cours" = "#2563EB", "réalisée" = "#16A34A", "en retard" = "#DC2626", "reportée" = "#6B7280", "annulée" = "#111827")) +
+  labs(title = "Chronogramme des formations", x = NULL, y = NULL, color = "Statut") +
+  theme_minimal(base_size = 12) +
+  theme(plot.title = element_text(face = "bold", color = "#7F1D1D"), legend.position = "bottom")
+```
+
+```{r formations-table}
+make_reactable(d$formations, page_size = 10)
+```
+
+## Piliers de préparation et réponse
+
+```{r piliers-table}
+make_reactable(
+  pillar_progress_summary(d$pillar_activities),
+  page_size = 12,
+  columns = list(
+    taux_avancement = reactable::colDef(cell = function(value) progress_bar_html(value), html = TRUE),
+    cout_total = reactable::colDef(format = reactable::colFormat(separators = TRUE, digits = 0))
+  )
+)
+```
+
+## Activités par pilier
+
+```{r activites-plot}
+d$pillar_activities |>
+  count(pilier, name = "n") |>
+  ggplot(aes(forcats::fct_reorder(pilier, n), n)) +
+  geom_col(fill = "#B91C1C", width = .72) +
+  coord_flip() +
+  labs(title = "Nombre d’activités par pilier", x = NULL, y = "Nombre") +
+  theme_minimal(base_size = 12) +
+  theme(plot.title = element_text(face = "bold", color = "#7F1D1D"))
+```
+
+```{r activites-table}
+make_reactable(
+  d$pillar_activities,
+  page_size = 12,
+  columns = list(
+    taux_avancement = reactable::colDef(cell = function(value) progress_bar_html(value), html = TRUE),
+    statut = reactable::colDef(cell = function(value) status_badge(value), html = TRUE)
+  )
+)
+```
+
+## Laboratoires, équipements et sites d’installation
+
+```{r labo-map}
+plot_lab_sites(shp_priority, d$sites_laboratoires)
+```
+
+```{r materiels-table}
+make_reactable(d$materiels_laboratoire, page_size = 8)
+```
+
+## Cartes stratégiques
+
+```{r priority-map}
+plot_priority_districts(shp_priority)
+```
+
+```{r lab-sites-table}
+make_reactable(d$sites_laboratoires, page_size = 8)
+```
+
+## Situation épidémiologique RDC et Ouganda
+
+```{r epi-kpis, results='asis'}
+ep <- d$indicators$epidemio
+htmltools::div(
+  class = "kpi-grid",
+  kpi_card("Cas confirmés cumulés", fmt_num(ep$cas_confirmes_total), "RDC + Ouganda"),
+  kpi_card("CFR confirmé", fmt_pct(ep$cfr)),
+  kpi_card("Cas confirmés dernières 24h", fmt_num(ep$cas_confirmes_24h), "RDC — dernière date du fichier"),
+  kpi_card("Décès confirmés", fmt_num(ep$deces_confirmes_total)),
+  kpi_card("Guérisons", fmt_num(ep$guerisons_total)),
+  kpi_card("Cas confirmés Ouganda", fmt_num(ep$cas_confirmes_ouganda))
+)
+```
+
+```{r epi-curve}
+d$rdc_daily |>
+  ggplot(aes(date, cas_confirmes)) +
+  geom_col(fill = "#B91C1C", width = .85) +
+  labs(title = "Histogramme épidémique RDC — cas confirmés journaliers", x = NULL, y = "Cas confirmés") +
+  theme_minimal(base_size = 12) +
+  theme(plot.title = element_text(face = "bold", color = "#7F1D1D"))
+```
+
+```{r rdc-summary}
+make_reactable(d$rdc_ouganda_summary, page_size = 5)
+```
+
+## Données, hypothèses et annexes
+
+```{r assumptions, results='asis'}
+alerts <- quality_alerts(d)
+htmltools::tagList(
+  lapply(alerts$message, function(x) htmltools::div(class = "assumption", x)),
+  htmltools::div(class = "assumption", "Les valeurs RDC/Ouganda de référence proviennent de l’OMS, image publiée le 23/06/2026 avec données au 21/06/2026 ; elles doivent être remplacées par les fichiers nationaux si disponibles."),
+  htmltools::div(class = "assumption", "Les données PoE de température ≥ 38°C sont traitées comme signaux fébriles/alertes à vérifier, et non comme cas suspects MVE sans investigation clinique.")
+)
+```
+
+```{r sources-table}
+source_df <- dplyr::bind_rows(
+  tibble::tibble(table = "surveillance_poe", lignes = nrow(d$poe), source = paste(unique(d$poe$source_donnees), collapse = "; "), type = paste(unique(d$poe$source_type), collapse = "; ")),
+  tibble::tibble(table = "activites_par_piliers", lignes = nrow(d$pillar_activities), source = paste(unique(d$pillar_activities$source_donnees), collapse = "; "), type = paste(unique(d$pillar_activities$source_type), collapse = "; ")),
+  tibble::tibble(table = "formations", lignes = nrow(d$formations), source = paste(unique(d$formations$source_donnees), collapse = "; "), type = paste(unique(d$formations$source_type), collapse = "; ")),
+  tibble::tibble(table = "laboratoires", lignes = nrow(d$sites_laboratoires), source = paste(unique(d$sites_laboratoires$source_donnees), collapse = "; "), type = paste(unique(d$sites_laboratoires$source_type), collapse = "; ")),
+  tibble::tibble(table = "rdc_daily", lignes = nrow(d$rdc_daily), source = paste(unique(d$rdc_daily$source_donnees), collapse = "; "), type = paste(unique(d$rdc_daily$source_type), collapse = "; "))
+)
+make_reactable(source_df, page_size = 10)
+```
+
+```{r contact-footer, results='asis'}
+contact_footer_ui()
+```

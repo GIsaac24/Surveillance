@@ -1,0 +1,11 @@
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+*.log
+shiny_test_stdout.log
+shiny_test_stderr.log
+CAR_Dashboard_Preparation_Menace_MVE/outputs/
+CAR_Dashboard_Preparation_Menace_MVE/dashboard_static.knit.md
+CAR_Dashboard_Preparation_Menace_MVE/*.utf8.md
+CAR_Dashboard_Preparation_Menace_MVE/*_files/
