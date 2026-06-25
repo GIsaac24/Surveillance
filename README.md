@@ -2,6 +2,18 @@
 
 Ce dépôt contient l’application Shiny et l’export HTML du tableau de bord de préparation de la République Centrafricaine face à la menace d’importation de la Maladie à Virus Ebola.
 
+## Ouvrir le dashboard en ligne
+
+Lien public recommandé, après activation de GitHub Pages :
+
+[Ouvrir le Dashboard MVE RCA](https://gisaac24.github.io/Surveillance/)
+
+Lien HTML direct dans le dépôt :
+
+[Télécharger/ouvrir l’export HTML](outputs/CAR_Dashboard_Preparation_Menace_MVE.html)
+
+Si GitHub Pages n’est pas encore actif, aller dans **Settings → Pages**, choisir **Deploy from a branch**, puis **main / root**, et enregistrer.
+
 ## Contenu
 
 - `CAR_Dashboard_Preparation_Menace_MVE/` : application Shiny et sources R/RMarkdown.
