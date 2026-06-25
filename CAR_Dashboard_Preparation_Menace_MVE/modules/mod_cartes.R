@@ -6,36 +6,44 @@ mod_cartes_ui <- function(id) {
       "Districts prioritaires, sous-préfectures et sites d’installation des laboratoires."
     ),
     div(class = "panel-card map-toolbar", p(class = "small-note", textOutput(ns("map_note")))),
-    bslib::layout_columns(
-      col_widths = c(7, 5),
-      div(
-        class = "panel-card map-card",
-        h4("Districts prioritaires et sous-préfectures"),
-        leaflet::leafletOutput(ns("priority_map"), height = 560)
+    bslib::navset_card_tab(
+      bslib::nav_panel(
+        "Districts prioritaires et sous-préfectures",
+        bslib::layout_columns(
+          col_widths = c(7, 5),
+          div(
+            class = "map-card",
+            h4("Districts prioritaires et sous-préfectures"),
+            leaflet::leafletOutput(ns("priority_map"), height = 560)
+          ),
+          div(
+            class = "side-insight",
+            h4("District / sous-préfecture survolé(e)"),
+            uiOutput(ns("priority_info")),
+            tags$hr(),
+            h4("Districts prioritaires"),
+            reactable::reactableOutput(ns("district_table"))
+          )
+        )
       ),
-      div(
-        class = "panel-card side-insight",
-        h4("District / sous-préfecture survolé(e)"),
-        uiOutput(ns("priority_info")),
-        tags$hr(),
-        h4("Districts prioritaires"),
-        reactable::reactableOutput(ns("district_table"))
-      )
-    ),
-    bslib::layout_columns(
-      col_widths = c(7, 5),
-      div(
-        class = "panel-card map-card",
-        h4("Sites d’installation des laboratoires"),
-        leaflet::leafletOutput(ns("lab_map"), height = 560)
-      ),
-      div(
-        class = "panel-card side-insight",
-        h4("Site laboratoire survolé"),
-        uiOutput(ns("lab_info")),
-        tags$hr(),
-        h4("Sites prévus"),
-        reactable::reactableOutput(ns("lab_table"))
+      bslib::nav_panel(
+        "Sites d’installation des laboratoires",
+        bslib::layout_columns(
+          col_widths = c(7, 5),
+          div(
+            class = "map-card",
+            h4("Sites d’installation des laboratoires"),
+            leaflet::leafletOutput(ns("lab_map"), height = 560)
+          ),
+          div(
+            class = "side-insight",
+            h4("Site laboratoire survolé"),
+            uiOutput(ns("lab_info")),
+            tags$hr(),
+            h4("Sites prévus"),
+            reactable::reactableOutput(ns("lab_table"))
+          )
+        )
       )
     )
   )

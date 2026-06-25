@@ -1,9 +1,11 @@
 ---
-title: "CAR Dashboard — Préparation Menace MVE"
+pagetitle: "Dashboard MVE RCA"
 output:
   html_document:
     toc: true
-    toc_float: true
+    toc_float:
+      collapsed: false
+      smooth_scroll: true
     theme: flatly
     self_contained: true
     css: www/custom.css
@@ -184,7 +186,22 @@ if (!nrow(daily_aero)) {
 }
 ```
 
-## Matrice des formations et chronogramme
+## Préparation opérationnelle {.tabset .tabset-fade}
+
+### Piliers de préparation et réponse
+
+```{r piliers-table}
+make_reactable(
+  pillar_progress_summary(d$pillar_activities),
+  page_size = 12,
+  columns = list(
+    taux_avancement = reactable::colDef(cell = function(value) progress_bar_html(value), html = TRUE),
+    cout_total = reactable::colDef(format = reactable::colFormat(separators = TRUE, digits = 0))
+  )
+)
+```
+
+### Matrice des formations et chronogramme
 
 ```{r formations-plot}
 d$formations |>
@@ -206,61 +223,28 @@ d$formations |>
 make_reactable(d$formations, page_size = 10)
 ```
 
-## Piliers de préparation et réponse
-
-```{r piliers-table}
-make_reactable(
-  pillar_progress_summary(d$pillar_activities),
-  page_size = 12,
-  columns = list(
-    taux_avancement = reactable::colDef(cell = function(value) progress_bar_html(value), html = TRUE),
-    cout_total = reactable::colDef(format = reactable::colFormat(separators = TRUE, digits = 0))
-  )
-)
-```
-
-## Activités par pilier
-
-```{r activites-plot}
-d$pillar_activities |>
-  count(pilier, name = "n") |>
-  ggplot(aes(forcats::fct_reorder(pilier, n), n)) +
-  geom_col(fill = "#B91C1C", width = .72) +
-  coord_flip() +
-  labs(title = "Nombre d’activités par pilier", x = NULL, y = "Nombre") +
-  theme_minimal(base_size = 12) +
-  theme(plot.title = element_text(face = "bold", color = "#7F1D1D"))
-```
-
-```{r activites-table}
-make_reactable(
-  d$pillar_activities,
-  page_size = 12,
-  columns = list(
-    taux_avancement = reactable::colDef(cell = function(value) progress_bar_html(value), html = TRUE),
-    statut = reactable::colDef(cell = function(value) status_badge(value), html = TRUE)
-  )
-)
-```
-
 ## Laboratoires, équipements et sites d’installation
-
-```{r labo-map}
-leaflet_lab_sites_map(shp_priority, d$sites_laboratoires, subpref_shapes)
-```
 
 ```{r materiels-table}
 make_reactable(d$materiels_laboratoire, page_size = 8)
 ```
 
-## Cartes stratégiques
+```{r lab-sites-table}
+make_reactable(d$sites_laboratoires, page_size = 8)
+```
+
+## Cartographie stratégique {.tabset .tabset-fade}
+
+### Districts prioritaires et sous-préfectures
 
 ```{r priority-map}
 leaflet_priority_map(shp_priority, subpref_shapes)
 ```
 
-```{r lab-sites-table}
-make_reactable(d$sites_laboratoires, page_size = 8)
+### Sites d’installation des laboratoires
+
+```{r labo-map}
+leaflet_lab_sites_map(shp_priority, d$sites_laboratoires, subpref_shapes)
 ```
 
 ## Situation épidémiologique RDC et Ouganda

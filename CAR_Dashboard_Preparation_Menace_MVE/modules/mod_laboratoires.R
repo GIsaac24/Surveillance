@@ -4,8 +4,7 @@ mod_laboratoires_ui <- function(id) {
     section_title("Laboratoires, équipements et sites d’installation", "Suivi des besoins matériels, des gaps et des localités prévues pour l’appui laboratoire MVE."),
     uiOutput(ns("kpis")),
     fluidRow(
-      column(6, div(class = "panel-card", plotOutput(ns("materials_gap"), height = 330))),
-      column(6, div(class = "panel-card", leaflet::leafletOutput(ns("lab_map"), height = 330)))
+      column(12, div(class = "panel-card", plotOutput(ns("materials_gap"), height = 330)))
     ),
     fluidRow(
       column(6, div(class = "panel-card", h4("Matériels de laboratoire"), reactable::reactableOutput(ns("materials_table")))),
@@ -39,13 +38,6 @@ mod_laboratoires_server <- function(id, dashboard_data) {
         labs(title = "Gaps matériels prioritaires", x = NULL, y = "Gap", fill = "Priorité") +
         theme_minimal(base_size = 12) +
         theme(plot.title = element_text(face = "bold", color = "#7F1D1D"), legend.position = "bottom")
-    })
-
-    output$lab_map <- leaflet::renderLeaflet({
-      dat <- req(dashboard_data())
-      shp <- load_priority_district_shapes(SHAPEFILE_DIR)
-      subpref <- load_subpref_shapes(SHAPEFILE_DIR, shp)
-      leaflet_lab_sites_map(shp, dat$sites_laboratoires, subpref)
     })
 
     output$materials_table <- reactable::renderReactable({

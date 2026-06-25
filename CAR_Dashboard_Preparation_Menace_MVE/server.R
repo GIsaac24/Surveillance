@@ -12,7 +12,6 @@ server <- function(input, output, session) {
   mod_poe_aeroport_server("poe_aeroport", dashboard_data)
   mod_formations_server("formations", dashboard_data)
   mod_piliers_server("piliers", dashboard_data)
-  mod_activites_piliers_server("activites", dashboard_data)
   mod_laboratoires_server("laboratoires", dashboard_data)
   mod_cartes_server("cartes", dashboard_data)
   mod_rdc_ouganda_server("rdc_ouganda", dashboard_data)

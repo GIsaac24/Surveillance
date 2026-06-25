@@ -30,10 +30,18 @@ ui <- bslib::page_navbar(
   bslib::nav_panel("Chronologie", mod_chronologie_ui("chronologie")),
   bslib::nav_panel("PoE fluviaux", mod_poe_fluvial_ui("poe_fluvial")),
   bslib::nav_panel("Aéroport M’Poko", mod_poe_aeroport_ui("poe_aeroport")),
-  bslib::nav_panel("Formations", mod_formations_ui("formations")),
-  bslib::nav_panel("Piliers", mod_piliers_ui("piliers")),
-  bslib::nav_panel("Activités par pilier", mod_activites_piliers_ui("activites")),
+  bslib::nav_panel(
+    "Préparation",
+    section_title(
+      "Préparation opérationnelle",
+      "Lecture consolidée des piliers de préparation, de la réponse et du chronogramme des formations."
+    ),
+    bslib::navset_card_tab(
+      bslib::nav_panel("Piliers de préparation et réponse", mod_piliers_ui("piliers")),
+      bslib::nav_panel("Matrice des formations et chronogramme", mod_formations_ui("formations"))
+    )
+  ),
   bslib::nav_panel("Laboratoires", mod_laboratoires_ui("laboratoires")),
-  bslib::nav_panel("Cartes", mod_cartes_ui("cartes")),
+  bslib::nav_panel("Cartographie", mod_cartes_ui("cartes")),
   bslib::nav_panel("RDC & Ouganda", mod_rdc_ouganda_ui("rdc_ouganda"))
 )

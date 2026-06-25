@@ -406,3 +406,89 @@ html {
   text-decoration: none;
   font-weight: 700;
 }
+
+/* RMarkdown public export: professional left section navigator */
+.main-container {
+  max-width: none !important;
+}
+
+body .tocify {
+  position: fixed;
+  top: 92px;
+  left: 18px;
+  width: 285px;
+  max-height: calc(100vh - 116px);
+  overflow-y: auto;
+  border: 1px solid rgba(185, 28, 28, .16);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, .96);
+  box-shadow: 0 18px 38px rgba(17, 24, 39, .12);
+  padding: 12px;
+}
+
+body .tocify::before {
+  content: "Navigation";
+  display: block;
+  padding: 8px 10px 12px 10px;
+  color: var(--mve-red-dark);
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  font-size: .78rem;
+}
+
+body .tocify ul,
+body .tocify li {
+  line-height: 1.25;
+}
+
+body .tocify .tocify-item a,
+body .tocify .tocify-header a,
+body .tocify a {
+  color: #374151;
+  border-radius: 12px;
+  padding: 8px 10px;
+  font-weight: 700;
+}
+
+body .tocify .tocify-item.active,
+body .tocify .tocify-header.active,
+body .tocify .active,
+body .tocify .active a {
+  background: linear-gradient(135deg, #7f1d1d, #dc2626) !important;
+  color: #ffffff !important;
+  box-shadow: 0 8px 18px rgba(185, 28, 28, .18);
+}
+
+body .tocify .tocify-subheader a {
+  font-weight: 600;
+  font-size: .9rem;
+  padding-left: 18px;
+}
+
+body .toc-content,
+body div.toc-content,
+body .main-container {
+  margin-left: 325px !important;
+  width: calc(100% - 350px) !important;
+}
+
+body h1.title {
+  display: none;
+}
+
+@media (max-width: 1100px) {
+  body .tocify {
+    position: static;
+    width: auto;
+    max-height: 260px;
+    margin: 0 0 18px 0;
+  }
+
+  body .toc-content,
+  body div.toc-content,
+  body .main-container {
+    margin-left: auto !important;
+    width: auto !important;
+  }
+}
