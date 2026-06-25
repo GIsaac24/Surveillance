@@ -2,7 +2,8 @@ options(shiny.sanitize.errors = FALSE, encoding = "UTF-8")
 
 required_packages <- c(
   "shiny", "bslib", "htmltools", "readxl", "dplyr", "tidyr", "stringr",
-  "lubridate", "ggplot2", "scales", "forcats", "reactable", "sf"
+  "lubridate", "ggplot2", "scales", "forcats", "reactable", "sf",
+  "plotly", "leaflet"
 )
 
 missing_packages <- required_packages[!vapply(required_packages, requireNamespace, logical(1), quietly = TRUE)]
@@ -24,12 +25,15 @@ suppressPackageStartupMessages({
   library(forcats)
   library(reactable)
   library(sf)
+  library(plotly)
+  library(leaflet)
 })
 
 source(file.path("R", "config.R"), encoding = "UTF-8")
 source(file.path("R", "functions_cleaning.R"), encoding = "UTF-8")
 source(file.path("R", "functions_indicators.R"), encoding = "UTF-8")
 source(file.path("R", "functions_maps.R"), encoding = "UTF-8")
+source(file.path("R", "functions_maps_leaflet.R"), encoding = "UTF-8")
 source(file.path("R", "functions_import.R"), encoding = "UTF-8")
 source(file.path("R", "functions_tables.R"), encoding = "UTF-8")
 source(file.path("R", "functions_export_html.R"), encoding = "UTF-8")

@@ -16,5 +16,4 @@ server <- function(input, output, session) {
   mod_laboratoires_server("laboratoires", dashboard_data)
   mod_cartes_server("cartes", dashboard_data)
   mod_rdc_ouganda_server("rdc_ouganda", dashboard_data)
-  mod_annexes_server("annexes", dashboard_data)
 }

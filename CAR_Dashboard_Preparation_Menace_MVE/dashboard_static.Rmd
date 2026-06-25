@@ -15,6 +15,7 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, fig.width 
 source("global.R", encoding = "UTF-8")
 d <- load_dashboard_data(DATA_DIR)
 shp_priority <- load_priority_district_shapes(SHAPEFILE_DIR)
+subpref_shapes <- load_subpref_shapes(SHAPEFILE_DIR, shp_priority)
 logo <- file.path(DATA_DIR, "images", "Armoiries RCA.png")
 poe_pack <- poe_analysis_pack(d$poe, "fluvial")
 ```
@@ -245,7 +246,7 @@ make_reactable(
 ## Laboratoires, équipements et sites d’installation
 
 ```{r labo-map}
-plot_lab_sites(shp_priority, d$sites_laboratoires)
+leaflet_lab_sites_map(shp_priority, d$sites_laboratoires, subpref_shapes)
 ```
 
 ```{r materiels-table}
@@ -255,7 +256,7 @@ make_reactable(d$materiels_laboratoire, page_size = 8)
 ## Cartes stratégiques
 
 ```{r priority-map}
-plot_priority_districts(shp_priority)
+leaflet_priority_map(shp_priority, subpref_shapes)
 ```
 
 ```{r lab-sites-table}
@@ -278,38 +279,30 @@ htmltools::div(
 ```
 
 ```{r epi-curve}
-d$rdc_daily |>
-  ggplot(aes(date, cas_confirmes)) +
-  geom_col(fill = "#B91C1C", width = .85) +
+p_epi <- d$rdc_daily |>
+  ggplot(
+    aes(
+      date,
+      cas_confirmes,
+      text = paste0(
+        "Date : ", format(date, "%d/%m/%Y"),
+        "<br>Cas confirmés : ", scales::comma(cas_confirmes, big.mark = " ", decimal.mark = ",")
+      )
+    )
+  ) +
+  geom_col(fill = "#B91C1C", color = "#111111", linewidth = 0.25, width = 1) +
   labs(title = "Histogramme épidémique RDC — cas confirmés journaliers", x = NULL, y = "Cas confirmés") +
   theme_minimal(base_size = 12) +
   theme(plot.title = element_text(face = "bold", color = "#7F1D1D"))
 ```
 
+```{r epi-curve-widget}
+plotly::ggplotly(p_epi, tooltip = "text") |>
+  plotly::layout(bargap = 0)
+```
+
 ```{r rdc-summary}
 make_reactable(d$rdc_ouganda_summary, page_size = 5)
-```
-
-## Données, hypothèses et annexes
-
-```{r assumptions, results='asis'}
-alerts <- quality_alerts(d)
-htmltools::tagList(
-  lapply(alerts$message, function(x) htmltools::div(class = "assumption", x)),
-  htmltools::div(class = "assumption", "Les valeurs RDC/Ouganda de référence proviennent de l’OMS, image publiée le 23/06/2026 avec données au 21/06/2026 ; elles doivent être remplacées par les fichiers nationaux si disponibles."),
-  htmltools::div(class = "assumption", "Les données PoE de température ≥ 38°C sont traitées comme signaux fébriles/alertes à vérifier, et non comme cas suspects MVE sans investigation clinique.")
-)
-```
-
-```{r sources-table}
-source_df <- dplyr::bind_rows(
-  tibble::tibble(table = "surveillance_poe", lignes = nrow(d$poe), source = paste(unique(d$poe$source_donnees), collapse = "; "), type = paste(unique(d$poe$source_type), collapse = "; ")),
-  tibble::tibble(table = "activites_par_piliers", lignes = nrow(d$pillar_activities), source = paste(unique(d$pillar_activities$source_donnees), collapse = "; "), type = paste(unique(d$pillar_activities$source_type), collapse = "; ")),
-  tibble::tibble(table = "formations", lignes = nrow(d$formations), source = paste(unique(d$formations$source_donnees), collapse = "; "), type = paste(unique(d$formations$source_type), collapse = "; ")),
-  tibble::tibble(table = "laboratoires", lignes = nrow(d$sites_laboratoires), source = paste(unique(d$sites_laboratoires$source_donnees), collapse = "; "), type = paste(unique(d$sites_laboratoires$source_type), collapse = "; ")),
-  tibble::tibble(table = "rdc_daily", lignes = nrow(d$rdc_daily), source = paste(unique(d$rdc_daily$source_donnees), collapse = "; "), type = paste(unique(d$rdc_daily$source_type), collapse = "; "))
-)
-make_reactable(source_df, page_size = 10)
 ```
 
 ```{r contact-footer, results='asis'}

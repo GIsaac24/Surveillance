@@ -58,7 +58,11 @@ Le modèle Excel `templates_donnees_dashboard_MVE.xlsx` contient les feuilles su
 - Les températures ≥ 38°C sont traitées comme signaux fébriles/alertes à vérifier, pas comme cas suspects MVE sans investigation clinique.
 - Les données RDC/Ouganda de référence intégrées dans le modèle proviennent de la page OMS “Alert and response”, image publiée le 23/06/2026, données au 21/06/2026.
 - Les fichiers de piliers existants contiennent surtout des lignes d’activités/budgets. Quand aucun statut ou taux d’avancement n’est fourni, le dashboard affiche un avancement à 0 % afin de ne pas inventer de progrès.
-- `leaflet`, `plotly` et `DT` ne sont pas installés dans l’environnement actuel. Le dashboard fonctionne donc sans dépendance supplémentaire, avec `sf`, `ggplot2`, `shiny` et `reactable`.
+- Les cartes et graphiques interactifs utilisent désormais `leaflet` et `plotly`. Installation minimale recommandée :
+
+```r
+install.packages(c("shiny", "bslib", "htmltools", "readxl", "dplyr", "tidyr", "stringr", "lubridate", "ggplot2", "scales", "forcats", "reactable", "sf", "plotly", "leaflet"))
+```
 - L’application Shiny est la version interactive principale : onglets cliquables, panneaux de survol, cartes avec zoom au survol des districts prioritaires et affichage des sous-préfectures/sites laboratoire. L’export HTML reste une version partageable et consultable hors serveur.
 
 ## Structure

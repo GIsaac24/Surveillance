@@ -5,7 +5,7 @@ mod_laboratoires_ui <- function(id) {
     uiOutput(ns("kpis")),
     fluidRow(
       column(6, div(class = "panel-card", plotOutput(ns("materials_gap"), height = 330))),
-      column(6, div(class = "panel-card", plotOutput(ns("lab_map"), height = 330)))
+      column(6, div(class = "panel-card", leaflet::leafletOutput(ns("lab_map"), height = 330)))
     ),
     fluidRow(
       column(6, div(class = "panel-card", h4("Matériels de laboratoire"), reactable::reactableOutput(ns("materials_table")))),
@@ -41,10 +41,11 @@ mod_laboratoires_server <- function(id, dashboard_data) {
         theme(plot.title = element_text(face = "bold", color = "#7F1D1D"), legend.position = "bottom")
     })
 
-    output$lab_map <- renderPlot({
+    output$lab_map <- leaflet::renderLeaflet({
       dat <- req(dashboard_data())
       shp <- load_priority_district_shapes(SHAPEFILE_DIR)
-      plot_lab_sites(shp, dat$sites_laboratoires)
+      subpref <- load_subpref_shapes(SHAPEFILE_DIR, shp)
+      leaflet_lab_sites_map(shp, dat$sites_laboratoires, subpref)
     })
 
     output$materials_table <- reactable::renderReactable({

@@ -1,10 +1,13 @@
 mod_rdc_ouganda_ui <- function(id) {
   ns <- NS(id)
   tagList(
-    section_title("Situation épidémiologique RDC et Ouganda", "Indicateurs de référence et histogramme épidémique issus des fichiers disponibles et de la référence OMS."),
+    section_title(
+      "Situation épidémiologique RDC et Ouganda",
+      "Indicateurs de référence et histogramme épidémique issus des fichiers disponibles et de la référence OMS."
+    ),
     uiOutput(ns("kpis")),
     fluidRow(
-      column(7, div(class = "panel-card", plotOutput(ns("epi_curve"), height = 360))),
+      column(7, div(class = "panel-card", plotly::plotlyOutput(ns("epi_curve"), height = 360))),
       column(5, div(class = "panel-card", plotOutput(ns("country_bars"), height = 360)))
     ),
     fluidRow(
@@ -30,13 +33,26 @@ mod_rdc_ouganda_server <- function(id, dashboard_data) {
       )
     })
 
-    output$epi_curve <- renderPlot({
+    output$epi_curve <- plotly::renderPlotly({
       d <- req(dashboard_data())$rdc_daily
-      ggplot(d, aes(date, cas_confirmes)) +
-        geom_col(fill = "#B91C1C", width = .85) +
+      p <- ggplot(
+        d,
+        aes(
+          date,
+          cas_confirmes,
+          text = paste0(
+            "Date : ", format(date, "%d/%m/%Y"),
+            "<br>Cas confirmés : ", scales::comma(cas_confirmes, big.mark = " ", decimal.mark = ",")
+          )
+        )
+      ) +
+        geom_col(fill = "#B91C1C", color = "#111111", linewidth = 0.25, width = 1) +
         labs(title = "Histogramme épidémique RDC — cas confirmés journaliers", x = NULL, y = "Cas confirmés") +
         theme_minimal(base_size = 12) +
         theme(plot.title = element_text(face = "bold", color = "#7F1D1D"))
+
+      plotly::ggplotly(p, tooltip = "text") |>
+        plotly::layout(bargap = 0)
     })
 
     output$country_bars <- renderPlot({

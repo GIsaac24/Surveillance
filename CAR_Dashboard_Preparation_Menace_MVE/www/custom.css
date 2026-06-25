@@ -11,6 +11,21 @@
 body {
   background: #f8fafc;
   color: var(--mve-ink);
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+html {
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.main-container,
+.container-fluid.main-container,
+.page-layout,
+.bslib-page-navbar {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
 }
 
 .navbar {
@@ -229,6 +244,24 @@ body {
   width: 100% !important;
 }
 
+.leaflet,
+.leaflet-container,
+.html-widget {
+  border-radius: 14px;
+}
+
+.leaflet-popup-content-wrapper,
+.leaflet-tooltip {
+  border-radius: 10px;
+  box-shadow: 0 10px 22px rgba(17, 24, 39, .12);
+}
+
+.leaflet-tooltip {
+  border: 1px solid rgba(127, 29, 29, .22);
+  color: #111827;
+  font-weight: 650;
+}
+
 @media (max-width: 900px) {
   .main-header {
     align-items: flex-start;
@@ -317,7 +350,7 @@ body {
 }
 
 .dashboard-footer {
-  margin: 34px 0 10px 0;
+  margin: 34px 0 0 0;
   padding: 24px 28px;
   border-radius: 22px 22px 0 0;
   background: linear-gradient(135deg, #7f1d1d 0%, #b91c1c 65%, #dc2626 100%);

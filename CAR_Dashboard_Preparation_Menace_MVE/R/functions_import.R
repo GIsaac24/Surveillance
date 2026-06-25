@@ -786,7 +786,7 @@ load_lab_sites <- function(files) {
 clean_lab_sites <- function(data, source, is_example) {
   data <- as.data.frame(data, stringsAsFactors = FALSE)
   get <- function(candidates, default = NA) col_or_default(data, candidates, default)
-  dplyr::tibble(
+  out <- dplyr::tibble(
     id_site = as.character(get(c("id_site"), paste0("LAB_", seq_len(nrow(data))))),
     localite = as.character(get(c("localite", "localité"), NA_character_)),
     district_sanitaire = as.character(get(c("district_sanitaire", "district"), NA_character_)),
@@ -802,6 +802,41 @@ clean_lab_sites <- function(data, source, is_example) {
     source_donnees = source,
     source_type = flag_source(is_example)
   )
+
+  defaults <- LAB_SITES_DEFAULT |>
+    dplyr::mutate(
+      localite_key = normalize_text(localite),
+      district_key = normalize_district_name(district_sanitaire)
+    ) |>
+    dplyr::select(
+      localite_key, district_key,
+      latitude_ref = latitude,
+      longitude_ref = longitude,
+      region_ref = region_sanitaire,
+      type_ref = type_laboratoire,
+      niveau_ref = niveau_laboratoire,
+      statut_ref = statut_installation
+    )
+
+  out |>
+    dplyr::mutate(
+      localite_key = normalize_text(localite),
+      district_key = normalize_district_name(district_sanitaire)
+    ) |>
+    dplyr::left_join(defaults, by = c("localite_key", "district_key")) |>
+    dplyr::mutate(
+      latitude = dplyr::coalesce(latitude, latitude_ref),
+      longitude = dplyr::coalesce(longitude, longitude_ref),
+      region_sanitaire = dplyr::coalesce(region_sanitaire, region_ref),
+      type_laboratoire = dplyr::coalesce(type_laboratoire, type_ref),
+      niveau_laboratoire = dplyr::coalesce(niveau_laboratoire, niveau_ref),
+      statut_installation = dplyr::coalesce(statut_installation, statut_ref)
+    ) |>
+    dplyr::select(
+      id_site, localite, district_sanitaire, region_sanitaire, latitude, longitude,
+      type_laboratoire, niveau_laboratoire, statut_installation,
+      date_prevue_installation, partenaire_appui, commentaire, source_donnees, source_type
+    )
 }
 
 load_rdc_ouganda_data <- function(files) {

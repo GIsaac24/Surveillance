@@ -35,6 +35,5 @@ ui <- bslib::page_navbar(
   bslib::nav_panel("Activités par pilier", mod_activites_piliers_ui("activites")),
   bslib::nav_panel("Laboratoires", mod_laboratoires_ui("laboratoires")),
   bslib::nav_panel("Cartes", mod_cartes_ui("cartes")),
-  bslib::nav_panel("RDC & Ouganda", mod_rdc_ouganda_ui("rdc_ouganda")),
-  bslib::nav_panel("Données & annexes", mod_annexes_ui("annexes"))
+  bslib::nav_panel("RDC & Ouganda", mod_rdc_ouganda_ui("rdc_ouganda"))
 )
