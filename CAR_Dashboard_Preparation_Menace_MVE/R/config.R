@@ -19,6 +19,16 @@ SHAPEFILE_DIR <- Sys.getenv("MVE_SHAPEFILE_DIR", unset = file.path(PROJECT_BASE,
 OUTPUT_DIR <- Sys.getenv("MVE_OUTPUT_DIR", unset = file.path(PROJECT_BASE, "outputs"))
 WWW_DIR <- file.path(APP_DIR, "www")
 
+publication_dir_candidates <- c(
+  Sys.getenv("MVE_PUBLICATION_DIR", unset = NA_character_),
+  file.path(PROJECT_BASE, "publication"),
+  file.path(APP_DIR, "publication"),
+  "C:/Users/user/Documents/Préparation EBOLA/SitReps/Data surveillance/analyse_poe/analyse_poe/publication"
+)
+publication_dir_candidates <- publication_dir_candidates[!is.na(publication_dir_candidates) & nzchar(publication_dir_candidates)]
+publication_dir_candidates <- normalizePath(publication_dir_candidates, winslash = "/", mustWork = FALSE)
+PUBLICATION_DIR <- publication_dir_candidates[dir.exists(publication_dir_candidates)][1] %||% file.path(APP_DIR, "publication")
+
 DASHBOARD_NAME <- "CAR_Dashboard_Preparation_Menace_MVE"
 DASHBOARD_TITLE <- "Préparation de la RCA face à la menace d’importation de la MVE"
 DASHBOARD_SUBTITLE <- "Maladie à Virus Ebola — souche Bundibugyo"

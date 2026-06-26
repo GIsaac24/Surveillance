@@ -19,6 +19,10 @@ logo <- file.path(DATA_DIR, "images", "Armoiries RCA.png")
 poe_pack <- poe_analysis_pack(d$poe, "fluvial")
 ```
 
+```{r publication-banner, results='asis'}
+publication_banner_ui(PUBLICATION_DIR)
+```
+
 ```{r header, results='asis'}
 htmltools::div(
   class = "main-header",
@@ -43,20 +47,12 @@ htmltools::div(
   kpi_card("Activités préparatoires", fmt_num(ind$activities$total_activites), paste("Avancement moyen :", fmt_pct(ind$activities$taux_avancement_global))),
   kpi_card("Formations", fmt_num(ind$formations$total_formations), paste("Réalisées :", fmt_num(ind$formations$formations_realisees))),
   kpi_card("Laboratoires prévus", fmt_num(ind$lab$laboratoires_prevus), paste("Gap matériel :", fmt_num(ind$lab$gap_materiel))),
-  kpi_card("Cas confirmés RDC/Ouganda", fmt_num(ind$epidemio$cas_confirmes_total), paste("CFR :", fmt_pct(ind$epidemio$cfr))),
   kpi_card("Score indicatif préparation", fmt_pct(ind$strategic$score_preparation), "Activités, formations et laboratoires")
 )
 ```
 
-```{r overview-plots}
-pillar_progress_summary(d$pillar_activities) |>
-  ggplot(aes(forcats::fct_reorder(pilier, taux_avancement), taux_avancement)) +
-  geom_col(fill = "#B91C1C", width = .72) +
-  coord_flip() +
-  scale_y_continuous(labels = scales::percent_format(accuracy = 1), limits = c(0, 1)) +
-  labs(title = "Avancement moyen par pilier", x = NULL, y = NULL) +
-  theme_minimal(base_size = 12) +
-  theme(plot.title = element_text(face = "bold", color = "#7F1D1D"))
+```{r overview-plots, fig.width=12, fig.height=6.2}
+plot_pillar_progress(d$pillar_activities)
 ```
 
 ```{r poe-trend}
@@ -242,48 +238,6 @@ leaflet_priority_map(shp_priority, subpref_shapes)
 
 ```{r labo-map}
 leaflet_lab_sites_map(shp_priority, d$sites_laboratoires, subpref_shapes)
-```
-
-## Situation épidémiologique RDC et Ouganda
-
-```{r epi-kpis, results='asis'}
-ep <- d$indicators$epidemio
-htmltools::div(
-  class = "kpi-grid",
-  kpi_card("Cas confirmés cumulés", fmt_num(ep$cas_confirmes_total), "RDC + Ouganda"),
-  kpi_card("CFR confirmé", fmt_pct(ep$cfr)),
-  kpi_card("Cas confirmés dernières 24h", fmt_num(ep$cas_confirmes_24h), "RDC — dernière date du fichier"),
-  kpi_card("Décès confirmés", fmt_num(ep$deces_confirmes_total)),
-  kpi_card("Guérisons", fmt_num(ep$guerisons_total)),
-  kpi_card("Cas confirmés Ouganda", fmt_num(ep$cas_confirmes_ouganda))
-)
-```
-
-```{r epi-curve}
-p_epi <- d$rdc_daily |>
-  ggplot(
-    aes(
-      date,
-      cas_confirmes,
-      text = paste0(
-        "Date : ", format(date, "%d/%m/%Y"),
-        "<br>Cas confirmés : ", scales::comma(cas_confirmes, big.mark = " ", decimal.mark = ",")
-      )
-    )
-  ) +
-  geom_col(fill = "#B91C1C", color = "#111111", linewidth = 0.25, width = 1) +
-  labs(title = "Histogramme épidémique RDC — cas confirmés journaliers", x = NULL, y = "Cas confirmés") +
-  theme_minimal(base_size = 12) +
-  theme(plot.title = element_text(face = "bold", color = "#7F1D1D"))
-```
-
-```{r epi-curve-widget}
-plotly::ggplotly(p_epi, tooltip = "text") |>
-  plotly::layout(bargap = 0)
-```
-
-```{r rdc-summary}
-make_reactable(d$rdc_ouganda_summary, page_size = 5)
 ```
 
 ```{r contact-footer, results='asis'}

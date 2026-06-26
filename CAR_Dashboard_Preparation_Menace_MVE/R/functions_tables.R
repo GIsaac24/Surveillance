@@ -36,6 +36,100 @@ progress_bar_html <- function(x) {
   )
 }
 
+publication_image_files <- function(publication_dir = PUBLICATION_DIR) {
+  if (is.null(publication_dir) || !dir.exists(publication_dir)) return(character())
+  files <- list.files(
+    publication_dir,
+    pattern = "\\.(png|jpg|jpeg|webp)$",
+    full.names = TRUE,
+    ignore.case = TRUE
+  )
+  files[file.exists(files)]
+}
+
+publication_caption <- function(path) {
+  caption <- tools::file_path_sans_ext(basename(path))
+  caption <- gsub("[_-]+", " ", caption)
+  stringr::str_squish(caption)
+}
+
+publication_banner_ui <- function(publication_dir = PUBLICATION_DIR, max_images = 12) {
+  files <- publication_image_files(publication_dir)
+  if (!length(files)) return(NULL)
+  files <- head(files, max_images)
+
+  cards <- lapply(files, function(path) {
+    src <- if (requireNamespace("knitr", quietly = TRUE)) {
+      knitr::image_uri(path)
+    } else {
+      normalizePath(path, winslash = "/", mustWork = FALSE)
+    }
+    htmltools::div(
+      class = "publication-slide",
+      htmltools::img(src = src, alt = publication_caption(path), loading = "lazy"),
+      htmltools::div(class = "publication-caption", publication_caption(path))
+    )
+  })
+
+  htmltools::tags$section(
+    class = "publication-banner",
+    htmltools::div(
+      class = "publication-banner-header",
+      htmltools::span(class = "publication-banner-kicker", "Communication & terrain"),
+      htmltools::span(
+        class = "publication-banner-title",
+        "Préparation MVE — formations, prévention et engagement communautaire"
+      )
+    ),
+    htmltools::div(
+      class = "publication-marquee",
+      htmltools::div(class = "publication-marquee-track", htmltools::tagList(cards, cards))
+    )
+  )
+}
+
+plot_pillar_progress <- function(activities, title = "Avancement moyen par pilier") {
+  s <- pillar_progress_summary(activities) |>
+    dplyr::mutate(
+      taux_avancement = tidyr::replace_na(taux_avancement, 0),
+      pilier_label = stringr::str_wrap(pilier, width = 34),
+      label_pct = scales::percent(taux_avancement, accuracy = 1)
+    )
+
+  if (!nrow(s)) return(empty_plot("Aucune donnée disponible pour les piliers."))
+
+  ggplot2::ggplot(
+    s,
+    ggplot2::aes(
+      x = forcats::fct_reorder(pilier_label, taux_avancement),
+      y = taux_avancement
+    )
+  ) +
+    ggplot2::geom_col(fill = "#B91C1C", width = .68) +
+    ggplot2::geom_text(
+      ggplot2::aes(label = label_pct),
+      hjust = -0.12,
+      size = 3.6,
+      fontface = "bold",
+      color = "#111827"
+    ) +
+    ggplot2::coord_flip(clip = "off") +
+    ggplot2::scale_y_continuous(
+      labels = scales::percent_format(accuracy = 1),
+      limits = c(0, 1),
+      expand = ggplot2::expansion(mult = c(0, .18))
+    ) +
+    ggplot2::labs(title = title, x = NULL, y = NULL) +
+    ggplot2::theme_minimal(base_size = 12) +
+    ggplot2::theme(
+      plot.title = ggplot2::element_text(face = "bold", color = "#7F1D1D"),
+      axis.text.y = ggplot2::element_text(size = 10, color = "#111827", lineheight = .92),
+      axis.text.x = ggplot2::element_text(color = "#374151"),
+      panel.grid.major.y = ggplot2::element_blank(),
+      plot.margin = ggplot2::margin(10, 46, 10, 10)
+    )
+}
+
 pretty_column_label <- function(x) {
   key <- clean_names_fr(x)
   labels <- c(

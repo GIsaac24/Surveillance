@@ -22,6 +22,7 @@ ui <- bslib::page_navbar(
   ),
   header = htmltools::tagList(
     htmltools::tags$link(rel = "stylesheet", type = "text/css", href = "custom.css"),
+    publication_banner_ui(PUBLICATION_DIR),
     dashboard_header
   ),
   footer = contact_footer_ui(),
@@ -42,6 +43,5 @@ ui <- bslib::page_navbar(
     )
   ),
   bslib::nav_panel("Laboratoires", mod_laboratoires_ui("laboratoires")),
-  bslib::nav_panel("Cartographie", mod_cartes_ui("cartes")),
-  bslib::nav_panel("RDC & Ouganda", mod_rdc_ouganda_ui("rdc_ouganda"))
+  bslib::nav_panel("Cartographie", mod_cartes_ui("cartes"))
 )
